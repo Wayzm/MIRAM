@@ -5,6 +5,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <time.h>
+#include <omp.h>
 #include <assert.h>
 #include <cblas.h>
 
