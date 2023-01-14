@@ -4,17 +4,17 @@
 #include "lib.h"
 
 /***
- * GEVV_CLASSIQUE computes a normal vector * vector : a = b * x * y
- * GEMV_CLASSIQUE computes a normal matrix * vector : z = a * M * x 
+ * GEVV_CLASSIC computes a normal vector * vector : a = b * x * y
+ * GEMV_CLASSIC computes a normal matrix * vector : z = a * M * x 
  * GEMV_MODIFIED computes the nth colums of the matrix * vector : a = b * M[i + cols] * x
  * 
  ***/
-double GEVV_CLASSIQUE(const unsigned int size,
+double GEVV_CLASSIC(const unsigned int size,
                       const double factor,
 				      const double* vecteur_x,
 				      const double* vecteur_y);
 
-double GEMV_CLASSIQUE(const unsigned int rows,
+double GEMV_CLASSIC(const unsigned int rows,
                       const unsigned int cols,
                       const double factor,
                       const double* __restrict__ matrix,

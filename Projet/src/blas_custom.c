@@ -1,6 +1,6 @@
 #include "blas_custom.h"
 
-double GEVV_CLASSIQUE(const unsigned int size,
+double GEVV_CLASSIC(const unsigned int size,
                       const double factor,
 				      const double* vecteur_x,
 				      const double* vecteur_y){
