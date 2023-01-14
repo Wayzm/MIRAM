@@ -94,7 +94,7 @@ void compare_matrix(const ui32 rows_A,
 	printf("Différence max : %a \n", max);
 }
 
-f64 VerifyMatrix(const ui32 rows,
+f64 verify_matrix(const ui32 rows,
 				    const ui32 cols,
 				    const f64* restrict matrix_A){
 
