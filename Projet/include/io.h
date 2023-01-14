@@ -5,8 +5,6 @@
 /***
  * read_matrix will create a matrix from an input file
  * display_matrix will display on the pty the input matrix
- * 
- * 
  ***/
 double* read_matrix(const char* filename,
 					   const unsigned int rows,
