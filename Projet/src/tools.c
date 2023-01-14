@@ -32,7 +32,7 @@ f64* gen_atrix(const ui32 rows,
 }
 
 f64 norm_vector(const ui32 size,
-					 const f64* vecteur){
+				const f64* vecteur){
 	f64 norme = 0;
 	norme = DotProduct(size, vecteur, vecteur);
 	norme = sqrt(norme);
@@ -40,8 +40,8 @@ f64 norm_vector(const ui32 size,
 }
 
 f64 norm_robenius(const ui32 rows,
-					   const ui32 cols,
-					   const f64* matrix){
+				  const ui32 cols,
+				  const f64* matrix){
 
 	assert(rows != 0 && cols != 0);
 	f64 norme = 0;
@@ -52,7 +52,7 @@ f64 norm_robenius(const ui32 rows,
 }
 
 f64* normalization_uniform_vector(const ui32 size,
-								     const f64* vecteur){
+								  const f64* vecteur){
 	const f64 max = Norme_Vecteur(size, vecteur);
 	f64* restrict normed_vector = aligned_alloc(64, sizeof(f64) * size); 
 	for(ui32 i = 0U; i < size; ++i)
@@ -61,11 +61,11 @@ f64* normalization_uniform_vector(const ui32 size,
 }
 
 void compare_matrix(const ui32 rows_A,
-				   const ui32 cols_A,
-				   const f64* restrict matrix_A,
-                   const ui32 rows_B,
-                   const ui32 cols_B,
-				   const f64* restrict matrix_B){
+				    const ui32 cols_A,
+				    const f64* restrict matrix_A,
+                    const ui32 rows_B,
+                    const ui32 cols_B,
+				    const f64* restrict matrix_B){
 
 	assert(rows_A != 0 && cols_A != 0);
     assert(rows_A == rows_B);
@@ -95,11 +95,11 @@ void compare_matrix(const ui32 rows_A,
 }
 
 f64 verify_matrix(const ui32 rows,
-				    const ui32 cols,
-				    const f64* restrict matrix_A){
+				  const ui32 cols,
+				  const f64* restrict matrix_A){
 
 	assert(rows != 0 && cols != 0);
-	printf("Norme de Frobenius de la matrice : %lf \n", Norme_Frobenius(rows, cols, matrix_A));
+	printf("Norme de Frobenius de la matrice : %lf \n", norme_frobenius(rows, cols, matrix_A));
 	f64* restrict matrix = aligned_alloc(64, sizeof(f64) * rows * cols);
 	f64 matmat;
 
@@ -112,7 +112,7 @@ f64 verify_matrix(const ui32 rows,
 			matrix[i * cols + j] = matmat;
 		}
 	}
-	f64 norme = Norme_Frobenius(rows, cols, matrix);
+	f64 norme = norme_frobenius(rows, cols, matrix);
 	
 	free(matrix);
 	return norme;
