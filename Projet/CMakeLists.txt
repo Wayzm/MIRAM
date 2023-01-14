@@ -20,11 +20,11 @@ add_compile_options(
                       -fsanitize=address -fsanitize=undefined
                       -finline-functions -funroll-loops
                       -ftree-loop-vectorize -ftree-vectorize
-                      -fopt-info-all=blas.gcc.optrpt
+                      -fopt-info-all=miram.gcc.optrpt
                       )
 target_compile_options(custom_lib PRIVATE)
 
-target_compile_options(Arnoldi PRIVATE )
+target_compile_options(MIRAM PRIVATE )
 
 include_directories("include/")
 
