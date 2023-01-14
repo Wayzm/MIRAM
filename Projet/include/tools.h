@@ -5,34 +5,34 @@
 
 /***
  * gen_matrix will generates a random matrix of size rows * cols
- * d_rand will generates a random double value
+ * d_rand will generates a random f64 value
  * norm_vector will return the norm 2 of the vector
  * norm_frobenius will return the norm 2 of the matrix
  * normalization_uniform_vector will return an uniformally normed vector
  ***/
-double* gen_matrix(const unsigned int rows,
-				  const unsigned int cols);
-double d_rand();
+f64* gen_matrix(const ui32 rows,
+				  const ui32 cols);
+f64 d_rand();
 
-double norm_vector(const unsigned int size,
-					 const double* vecteur);
+f64 norm_vector(const ui32 size,
+					 const f64* vecteur);
 
-double norm_frobenius(const unsigned int rows,
-					   const unsigned int cols,
-					   const double* matrix);
+f64 norm_frobenius(const ui32 rows,
+					   const ui32 cols,
+					   const f64* matrix);
 
-double* normalization_uniform_vector(const unsigned int size,
-								     const double* vecteur);
+f64* normalization_uniform_vector(const ui32 size,
+								     const f64* vecteur);
 
 void compare_matrix(const unsigned rows_A,
 				   const unsigned cols_A,
-				   const double* __restrict__ matrix_A,
+				   const f64* __restrict__ matrix_A,
                    const unsigned rows_B,
                    const unsigned cols_B,
-				   const double* __restrict__ matrix_B);
+				   const f64* __restrict__ matrix_B);
 
-double verify_matrix(const unsigned int rows, 
-					const unsigned int cols,
-					const double* __restrict__ matrix);
+f64 verify_matrix(const ui32 rows, 
+					const ui32 cols,
+					const f64* __restrict__ matrix);
 
 #endif

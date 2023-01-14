@@ -1,8 +1,8 @@
 #include "io.h"
 
 double* read_matrix(const char* filename, 
-					const unsigned int rows,
-				    const unsigned int cols){
+					const ui32 rows,
+				    const ui32 cols){
 
 	double* restrict matrix = aligned_alloc(64, sizeof(double) * rows * cols);
 	FILE* matrix_file = fopen(filename, "r");  
@@ -22,11 +22,11 @@ double* read_matrix(const char* filename,
 }
 
 void display_matrix(const double* matrix, 
-					const unsigned int rows,
-					const unsigned int cols){
+					const ui32 rows,
+					const ui32 cols){
 
-	for(unsigned int i = 0U; i < rows; ++i){
-		for(unsigned int j = 0U; j < cols; ++j){
+	for(ui32 i = 0U; i < rows; ++i){
+		for(ui32 j = 0U; j < cols; ++j){
 			printf("%lf ", matrix[i*cols +j]);
 		}
 		printf("\n");
