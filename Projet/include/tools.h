@@ -9,6 +9,7 @@
  * norm_vector will return the norm 2 of the vector
  * norm_frobenius will return the norm 2 of the matrix
  * normalization_uniform_vector will return an uniformally normed vector
+ * compare_matrix will verify if each value is the same within an error margin
  ***/
 f64* gen_matrix(const ui32 rows,
 				  const ui32 cols);
@@ -20,6 +21,7 @@ f64 norm_vector(const ui32 size,
 f64 norm_frobenius(const ui32 rows,
 					   const ui32 cols,
 					   const f64* matrix);
+
 
 f64* normalization_uniform_vector(const ui32 size,
 								     const f64* vecteur);

@@ -1,0 +1,104 @@
+#include <stdio.h>
+#include <time.h>
+#include "io.h"
+#include "miram.h"
+#include "tools.h"
+#include "blas_custom.h"
+
+#define epsilon 10e-7
+int main(){
+    
+    // ARNOLDI PARAMETERS
+    ui32 rows = 3; // CANNOT BE CONST BECAUSE OF BLAS
+    ui32 cols = 3; // CANNOT BE CONST BECAUSE OF BLAS
+    const ui32 n_krylov = 2;
+	f64* __restrict__ matrix_Q_C = aligned_alloc(64, sizeof(f64) * rows * (n_krylov + 1));
+	f64* __restrict__ matrix_H_C = calloc(rows * n_krylov, sizeof(f64));
+    f64* __restrict__ matrix_Q_VERIF = aligned_alloc(64, sizeof(f64) * rows * (n_krylov + 1));
+	f64* __restrict__ matrix_H_VERIF = calloc(rows * n_krylov, sizeof(f64));
+	f64* __restrict__ matrix_Q_M = aligned_alloc(64, sizeof(f64) * rows * (n_krylov + 1));
+	f64* __restrict__ matrix_H_M = calloc(rows * n_krylov, sizeof(f64));
+	f64* __restrict__ matrix_A = gen_matrix(rows, cols);
+	f64* __restrict__ vecteur = gen_matrix(rows, 1);
+
+    // BLAS PARAMETERS
+    int INFO;
+    ui32 LWORK = rows * rows; // CANNOT BE CONST BECAUSE OF BLAS
+	int* __restrict__ IPIV = aligned_alloc(64, sizeof(int) * rows);
+	f64* __restrict__ WORK = aligned_alloc(64, sizeof(f64) * LWORK);
+
+    // VERIFICATION THAT RANDOMLY GENERATED MAT IS INVERSIBLE
+	f64* __restrict__ matrix_AI = aligned_alloc(64, sizeof(f64) * cols * rows);
+	for(ui32 i = 0U; i < rows * cols; ++i)
+		matrix_AI[i] = matrix_A[i];
+
+    // NEED MKL? COMPILES WITH IT BUT NOT WITHOUT
+	dgetrf_(&rows, &cols, matrix_AI, &rows, IPIV,&INFO);
+	dgetri_(&rows, matrix_AI, &cols, IPIV, WORK, &LWORK, &INFO);
+
+	if(INFO != 0){
+		perror("Matice non inversible. \n");
+		exit(0);
+	}
+    free(matrix_AI);
+
+    // FIXED MATRIX A VALUES FOR THE FOLLOWING TESTS
+	for(ui32 i = 0U; i < 3; ++i)
+		vecteur[i] = (f64)i;
+
+	matrix_A[0] = 1.0;
+	matrix_A[1] = 1.0;
+	matrix_A[2] = 1.0;
+	matrix_A[3] = 4.0;
+	matrix_A[4] = 2.0;
+	matrix_A[5] = 1.0;
+	matrix_A[6] = 9.0;
+	matrix_A[7] = 3.0;
+	matrix_A[8] = 1.0;
+
+    f64* __restrict__ Test_A = read_matrix("../Test_A.txt", rows, cols);
+    compare_matrix(rows, cols, matrix_A, rows, cols, Test_A, epsilon);
+    f64* __restrict__ Test_Q = read_matrix("../Test_Q.txt", rows, cols);
+    f64* __restrict__ Test_H = read_matrix("../Test_H.txt", rows, n_krylov);
+    free(matrix_A);
+
+    // TESTING BLAS FUNCTIONS
+    f64 result = GEVV_CLASSIC(rows, 1.0, vecteur, vecteur);
+    assert(result == 5.0);
+
+    f64* __restrict__ result_vector = GEMV_CLASSIC(rows, cols, 1.0,
+                                                   matrix_A, rows, vecteur);
+    assert(result_vector[0] == 3.0);
+    assert(result_vector[1] == 4.0);
+    assert(result_vector[2] == 5.0);
+
+    free(result_vector);
+
+    // Testing Arnoldi Methods
+
+    ArnoldiProjection_Classic(rows, cols, n_krylov, vecteur,
+                              Test_A, matrix_Q_C, matrix_H_C);
+    ArnoldiProjection_Modified(rows, cols, n_krylov, vecteur, 
+                               Test_A, matrix_Q_M, matrix_H_M);
+    
+    compare_matrix(rows, cols, matrix_Q_C, rows, cols, Test_Q, epsilon);
+    compare_matrix(rows, cols, matrix_Q_M, rows, cols, Test_Q, epsilon);
+    compare_matrix(rows, n_krylov, matrix_H_C, rows, n_krylov, Test_H, epsilon);
+    compare_matrix(rows, n_krylov, matrix_H_M, rows, n_krylov, Test_H, epsilon);
+
+    // END
+
+    printf("All tests finished successfully. \n");
+
+	free(matrix_Q_C);
+	free(matrix_H_C);
+	free(matrix_Q_M);
+	free(matrix_H_M);
+    free(Test_A);
+    free(Test_Q);
+    free(Test_H);
+	free(vecteur);
+	free(IPIV);
+	free(WORK);  
+    return 0;
+}

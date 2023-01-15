@@ -1,11 +1,13 @@
 cmake_minimum_required(VERSION 3.18)
 project("Projet MPNA" C)
+
 find_package(OpenMP REQUIRED)
 find_package(BLAS REQUIRED)
 
-add_library(custom_lib src/io.c src/miram.c src/blas_custom.c)
+add_library(custom_lib STATIC src/io.c src/miram.c src/blas_custom.c src/tools.c)
 
 add_executable(MIRAM src/main.c)
+add_executable(NO_MPI_TESTS src/tests_no_mpi.c)
 
 add_link_options(-fsanitize=address -fsanitize=undefined)
 add_compile_options(
@@ -22,9 +24,10 @@ add_compile_options(
                       -ftree-loop-vectorize -ftree-vectorize
                       -fopt-info-all=miram.gcc.optrpt
                       )
-target_compile_options(custom_lib PRIVATE)
 
+target_compile_options(custom_lib PRIVATE)
 target_compile_options(MIRAM PRIVATE )
+target_compile_options(NO_MPI_TESTS PRIVATE)
 
 include_directories("include/")
 
@@ -34,3 +37,7 @@ target_link_libraries(custom_lib ${BLAS_LIBRARIES})
 target_link_libraries(MIRAM OpenMP::OpenMP_C)
 target_link_libraries(MIRAM custom_lib)
 target_link_libraries(MIRAM ${BLAS_LIBRARIES})
+target_link_libraries(NO_MPI_TESTS OpenMP::OpenMP_C)
+target_link_libraries(NO_MPI_TESTS custom_lib)
+target_link_libraries(NO_MPI_TESTS ${BLAS_LIBRARIES})
+

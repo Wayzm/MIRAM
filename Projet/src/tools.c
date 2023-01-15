@@ -1,4 +1,5 @@
 #include "tools.h"
+#include "blas_custom.h"
 #include "lib.h"
 
 inline f64 d_rand(){
@@ -34,12 +35,12 @@ f64* gen_matrix(const ui32 rows,
 f64 norm_vector(const ui32 size,
 				const f64* vecteur){
 	f64 norme = 0;
-	norme = DotProduct(size, vecteur, vecteur);
+	norme = GEVV_CLASSIC(size, 1.0, vecteur, vecteur);
 	norme = sqrt(norme);
 	return norme;
 }
 
-f64 norm_robenius(const ui32 rows,
+f64 norm_frobenius(const ui32 rows,
 				  const ui32 cols,
 				  const f64* matrix){
 
@@ -54,7 +55,7 @@ f64 norm_robenius(const ui32 rows,
 
 f64* normalization_uniform_vector(const ui32 size,
 								  const f64* vecteur){
-	const f64 max = Norme_Vecteur(size, vecteur);
+	const f64 max = norm_vector(size, vecteur);
 	f64* restrict normed_vector = aligned_alloc(64, sizeof(f64) * size);
 	#pragma omp parallel for schedule(dynamic, 1)
 	for(ui32 i = 0U; i < size; ++i)
@@ -77,7 +78,7 @@ void compare_matrix(const ui32 rows_A,
 	#pragma omp parallel for schedule(dynamic, 1)
 	for(ui32 i = 0U; i < rows_A; ++i){
 		for(ui32 j = 0U; j < cols_A; ++j){
-			const f64 comp = abs(matrix_A[i * cols_A] - matrix_B[i * cols_B + j]);
+			const f64 comp = fabs(matrix_A[i * cols_A + j] - matrix_B[i * cols_B + j]);
 			assert(comp <= eps);
 		}
 	}
@@ -88,7 +89,7 @@ f64 verify_matrix(const ui32 rows,
 				  const f64* restrict matrix_A){
 
 	assert(rows != 0 && cols != 0);
-	printf("Norme de Frobenius de la matrice : %lf \n", norme_frobenius(rows, cols, matrix_A));
+	printf("Norme de Frobenius de la matrice : %lf \n", norm_frobenius(rows, cols, matrix_A));
 	f64* restrict matrix = aligned_alloc(64, sizeof(f64) * rows * cols);
 	f64 matmat;
 
@@ -102,7 +103,7 @@ f64 verify_matrix(const ui32 rows,
 			matrix[i * cols + j] = matmat;
 		}
 	}
-	f64 norme = norme_frobenius(rows, cols, matrix);
+	f64 norme = norm_frobenius(rows, cols, matrix);
 	
 	free(matrix);
 	return norme;
