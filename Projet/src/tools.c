@@ -55,7 +55,8 @@ f64 norm_robenius(const ui32 rows,
 f64* normalization_uniform_vector(const ui32 size,
 								  const f64* vecteur){
 	const f64 max = Norme_Vecteur(size, vecteur);
-	f64* restrict normed_vector = aligned_alloc(64, sizeof(f64) * size); 
+	f64* restrict normed_vector = aligned_alloc(64, sizeof(f64) * size);
+	#pragma omp parallel for schedule(dynamic, 1)
 	for(ui32 i = 0U; i < size; ++i)
 		normed_vector[i] = vecteur[i] / max;
 	return normed_vector;
