@@ -5,7 +5,7 @@ inline f64 d_rand(){
 	return (f64)rand() * 100;
 }
 
-f64* gen_atrix(const ui32 rows,
+f64* gen_matrix(const ui32 rows,
 						 const ui32 cols){
 
 	assert(rows != 0 && cols != 0);
@@ -45,6 +45,7 @@ f64 norm_robenius(const ui32 rows,
 
 	assert(rows != 0 && cols != 0);
 	f64 norme = 0;
+	#pragma omp parallel for schedule(dynamic, 1) reduction(+:norme)
 	for(ui32 i = 0U; i < rows * cols; ++i)
 		norme += matrix[i] * matrix[i];
 	norme = sqrt(norme);
@@ -72,6 +73,7 @@ void compare_matrix(const ui32 rows_A,
     assert(rows_A == rows_B);
     assert(cols_A == cols_B);
 
+	#pragma omp parallel for schedule(dynamic, 1)
 	for(ui32 i = 0U; i < rows_A; ++i){
 		for(ui32 j = 0U; j < cols_A; ++j){
 			const f64 comp = abs(matrix_A[i * cols_A] - matrix_B[i * cols_B + j]);
@@ -89,6 +91,7 @@ f64 verify_matrix(const ui32 rows,
 	f64* restrict matrix = aligned_alloc(64, sizeof(f64) * rows * cols);
 	f64 matmat;
 
+	#pragma omp parallel for schedule(dynamic, 1) private(matmat)
 	for(ui32 i = 0U; i < rows; ++i){
 		for(ui32 j = 0U; j < cols;  ++j){
 			matmat = 0;
