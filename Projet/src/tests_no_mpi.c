@@ -18,8 +18,21 @@ int main(){
 	f64* __restrict__ matrix_H_VERIF = calloc(rows * n_krylov, sizeof(f64));
 	f64* __restrict__ matrix_Q_M = aligned_alloc(64, sizeof(f64) * rows * (n_krylov + 1));
 	f64* __restrict__ matrix_H_M = calloc(rows * n_krylov, sizeof(f64));
-	f64* __restrict__ matrix_A = gen_matrix(rows, cols);
-	f64* __restrict__ vecteur = gen_matrix(rows, 1);
+	f64* __restrict__ matrix_A = aligned_alloc(64, sizeof(f64) * rows * cols);
+	f64* __restrict__ vecteur = aligned_alloc(64, sizeof(f64) * rows);
+
+	for(ui32 i = 0U; i < 3; ++i)
+		vecteur[i] = (f64)i;
+    
+	matrix_A[0] = 1.0;
+	matrix_A[1] = 1.0;
+	matrix_A[2] = 1.0;
+	matrix_A[3] = 4.0;
+	matrix_A[4] = 2.0;
+	matrix_A[5] = 1.0;
+	matrix_A[6] = 9.0;
+	matrix_A[7] = 3.0;
+	matrix_A[8] = 1.0;
 
     // BLAS PARAMETERS
     int INFO;
@@ -40,24 +53,12 @@ int main(){
 		perror("Matice non inversible. \n");
 		exit(0);
 	}
-    free(matrix_AI);
 
-    // FIXED MATRIX A VALUES FOR THE FOLLOWING TESTS
-	for(ui32 i = 0U; i < 3; ++i)
-		vecteur[i] = (f64)i;
-
-	matrix_A[0] = 1.0;
-	matrix_A[1] = 1.0;
-	matrix_A[2] = 1.0;
-	matrix_A[3] = 4.0;
-	matrix_A[4] = 2.0;
-	matrix_A[5] = 1.0;
-	matrix_A[6] = 9.0;
-	matrix_A[7] = 3.0;
-	matrix_A[8] = 1.0;
+    // SOLUTION VALUES FOR THE FOLLOWING TESTS
 
     f64* __restrict__ Test_A = read_matrix("../Test_A.txt", rows, cols);
     compare_matrix(rows, cols, matrix_A, rows, cols, Test_A, epsilon);
+    display_matrix(Test_A, rows, cols);
     f64* __restrict__ Test_Q = read_matrix("../Test_Q.txt", rows, cols);
     f64* __restrict__ Test_H = read_matrix("../Test_H.txt", rows, n_krylov);
     free(matrix_A);
@@ -65,12 +66,14 @@ int main(){
     // TESTING BLAS FUNCTIONS
     f64 result = GEVV_CLASSIC(rows, 1.0, vecteur, vecteur);
     assert(result == 5.0);
-
+    display_matrix(matrix_A, rows, cols);
+    display_matrix(vecteur, rows, 1);
     f64* __restrict__ result_vector = GEMV_CLASSIC(rows, cols, 1.0,
                                                    matrix_A, rows, vecteur);
-    assert(result_vector[0] == 3.0);
-    assert(result_vector[1] == 4.0);
-    assert(result_vector[2] == 5.0);
+    printf("Vector : %lf, %lf, %lf \n", result_vector[0], result_vector[1], result_vector[2]);
+    assert(fabs(result_vector[0] - 3.0) <= epsilon);
+    assert(fabs(result_vector[1] - 4.0) <= epsilon);
+    assert(fabs(result_vector[2] - 5.0) <= epsilon);
 
     free(result_vector);
 
@@ -94,6 +97,7 @@ int main(){
 	free(matrix_H_C);
 	free(matrix_Q_M);
 	free(matrix_H_M);
+    free(matrix_AI);
     free(Test_A);
     free(Test_Q);
     free(Test_H);
