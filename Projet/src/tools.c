@@ -65,33 +65,19 @@ void compare_matrix(const ui32 rows_A,
 				    const f64* restrict matrix_A,
                     const ui32 rows_B,
                     const ui32 cols_B,
-				    const f64* restrict matrix_B){
+				    const f64* restrict matrix_B,
+					const f64 eps){
 
 	assert(rows_A != 0 && cols_A != 0);
     assert(rows_A == rows_B);
     assert(cols_A == cols_B);
 
-	f64 norme_A, norme_B, diff;
-	f64 max = 0;
-
 	for(ui32 i = 0U; i < rows_A; ++i){
 		for(ui32 j = 0U; j < cols_A; ++j){
-			norme_A = 0;
-			norme_B = 0;
-			for(ui32 k = 0U; k < rows_A; ++k){
-				norme_A += matrix_A[k * cols_A + j] * matrix_A[k * cols_A + j];
-				norme_B += matrix_B[k * cols_A + j] * matrix_B[k * cols_A + j];
-			}
-			diff = norme_A - norme_B;
-			if(norme_A != 0){
-				diff /= norme_A;
-				if (max <= fabs(diff)){
-					max = fabs(diff);
-				}
-			}
+			const f64 comp = abs(matrix_A[i * cols_A] - matrix_B[i * cols_B + j]);
+			assert(comp <= eps);
 		}
 	}
-	printf("Différence max : %a \n", max);
 }
 
 f64 verify_matrix(const ui32 rows,
