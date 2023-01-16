@@ -7,7 +7,11 @@
 
 #define epsilon 10e-7
 int main(){
-    
+
+    // ENVIRONNEMENT
+    const char* cmd = "export OMP_NUM_THREADS=2";
+    system(cmd);
+
     // ARNOLDI PARAMETERS
     ui32 rows = 3; // CANNOT BE CONST BECAUSE OF BLAS
     ui32 cols = 3; // CANNOT BE CONST BECAUSE OF BLAS
@@ -64,11 +68,13 @@ int main(){
     // TESTING BLAS FUNCTIONS
     f64 result = GEVV_CLASSIC(rows, 1.0, vecteur, vecteur);
     assert(result == 5.0);
+    getchar();
     f64* __restrict__ result_vector = GEMV_CLASSIC(rows, cols, 1.0,
                                                    matrix_A, rows, vecteur);
     assert(fabs(result_vector[0] - 3.0) <= epsilon);
     assert(fabs(result_vector[1] - 4.0) <= epsilon);
     assert(fabs(result_vector[2] - 5.0) <= epsilon);
+    getchar();
 
     free(result_vector);
 

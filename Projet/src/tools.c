@@ -46,7 +46,6 @@ f64 norm_frobenius(const ui32 rows,
 
 	assert(rows != 0 && cols != 0);
 	f64 norme = 0;
-	#pragma omp parallel for schedule(dynamic, 1) reduction(+:norme)
 	for(ui32 i = 0U; i < rows * cols; ++i)
 		norme += matrix[i] * matrix[i];
 	norme = sqrt(norme);

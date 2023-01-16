@@ -24,11 +24,14 @@ void ArnoldiProjection_Modified(const ui32 rows,
         f64* __restrict__ v = GEMM_MODIFIED(rows, n_krylov + 1, 1.0,
                                             k - 1, matrix_Q, rows, cols,
                                             matrix_A);
+		printf("GEMM MODIFIED DONE \n");
+		getchar();
 		for(ui32 j = 0U; j < k; ++j){
 			for(ui32 i = 0U; i < rows; ++i){
 				temp[i] = matrix_Q[i * (n_krylov + 1) + j];
 			}
-			matrix_H[j * n_krylov + k - 1] = GEVV_CLASSIC(rows, 1.0, temp, v); 
+			matrix_H[j * n_krylov + k - 1] = GEVV_CLASSIC(rows, 1.0, temp, v);
+			getchar();
 
 			for(ui32 i = 0U; i < rows; ++i){
 				v[i] = v[i] - matrix_H[j * n_krylov + k - 1] * temp[i];
@@ -36,7 +39,7 @@ void ArnoldiProjection_Modified(const ui32 rows,
 		}
 
 		matrix_H[k * n_krylov + k - 1] = norm_vector(rows, v);
-
+		printf("Norm calculated \n");
 		if(matrix_H[k * n_krylov + k - 1] > eps){
 			for(ui32 j = 0U; j < rows; ++j){
 				matrix_Q[j * (n_krylov + 1) + k] = v[j] / matrix_H[k * n_krylov + k - 1];

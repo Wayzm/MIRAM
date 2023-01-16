@@ -7,10 +7,13 @@ f64 GEVV_CLASSIC(const ui32 size,
 				 const f64* vector_y){
 
     f64 result = 0;
-
-    #pragma omp parallel for schedule(dynamic, 1) reduction(+:result)
-    for(ui32 i = 0; i < size; ++i){
-        result += factor * vector_x[i] * vector_y[i];
+    #pragma omp parallel
+    {
+        #pragma omp for schedule(dynamic, 1) reduction(+:result)
+        for(ui32 i = 0; i < size; ++i){
+            printf("Value of i : %d \n", i);
+            result += factor * vector_x[i] * vector_y[i];
+        }
     }
     return result;
 }
