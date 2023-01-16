@@ -25,9 +25,9 @@ void display_matrix(const double* matrix,
 					const ui32 rows,
 					const ui32 cols){
 
-	for(ui32 i = 0U; i < rows; ++i){
-		for(ui32 j = 0U; j < cols; ++j){
-			printf("%lf ", matrix[i*cols +j]);
+	for(ui32 i = 0; i < rows; ++i){
+		for(ui32 j = 0; j < cols; ++j){
+			printf("%lf ", matrix[i*cols + j]);
 		}
 		printf("\n");
 	}

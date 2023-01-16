@@ -58,19 +58,14 @@ int main(){
 
     f64* __restrict__ Test_A = read_matrix("../Test_A.txt", rows, cols);
     compare_matrix(rows, cols, matrix_A, rows, cols, Test_A, epsilon);
-    display_matrix(Test_A, rows, cols);
     f64* __restrict__ Test_Q = read_matrix("../Test_Q.txt", rows, cols);
     f64* __restrict__ Test_H = read_matrix("../Test_H.txt", rows, n_krylov);
-    free(matrix_A);
 
     // TESTING BLAS FUNCTIONS
     f64 result = GEVV_CLASSIC(rows, 1.0, vecteur, vecteur);
     assert(result == 5.0);
-    display_matrix(matrix_A, rows, cols);
-    display_matrix(vecteur, rows, 1);
     f64* __restrict__ result_vector = GEMV_CLASSIC(rows, cols, 1.0,
                                                    matrix_A, rows, vecteur);
-    printf("Vector : %lf, %lf, %lf \n", result_vector[0], result_vector[1], result_vector[2]);
     assert(fabs(result_vector[0] - 3.0) <= epsilon);
     assert(fabs(result_vector[1] - 4.0) <= epsilon);
     assert(fabs(result_vector[2] - 5.0) <= epsilon);
@@ -98,6 +93,7 @@ int main(){
 	free(matrix_Q_M);
 	free(matrix_H_M);
     free(matrix_AI);
+    free(matrix_A);
     free(Test_A);
     free(Test_Q);
     free(Test_H);

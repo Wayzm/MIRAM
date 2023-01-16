@@ -65,10 +65,10 @@ f64* normalization_uniform_vector(const ui32 size,
 
 void compare_matrix(const ui32 rows_A,
 				    const ui32 cols_A,
-				    const f64* restrict matrix_A,
+				    const f64* __restrict__ matrix_A,
                     const ui32 rows_B,
                     const ui32 cols_B,
-				    const f64* restrict matrix_B,
+				    const f64* __restrict__ matrix_B,
 					const f64 eps){
 
 	assert(rows_A != 0 && cols_A != 0);
@@ -86,7 +86,7 @@ void compare_matrix(const ui32 rows_A,
 
 f64 verify_matrix(const ui32 rows,
 				  const ui32 cols,
-				  const f64* restrict matrix_A){
+				  const f64* __restrict__ matrix_A){
 
 	assert(rows != 0 && cols != 0);
 	printf("Norme de Frobenius de la matrice : %lf \n", norm_frobenius(rows, cols, matrix_A));
