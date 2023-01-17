@@ -7,7 +7,7 @@ inline f64 d_rand(){
 }
 
 f64* gen_matrix(const ui32 rows,
-						 const ui32 cols){
+				const ui32 cols){
 
 	assert(rows != 0 && cols != 0);
 
@@ -34,18 +34,21 @@ f64* gen_matrix(const ui32 rows,
 
 f64 norm_vector(const ui32 size,
 				const f64* vecteur){
+	assert(size != 0);
 	f64 norme = 0;
-	norme = GEVV_CLASSIC(size, 1.0, vecteur, vecteur);
+	for(ui32 i = 0; i < size; ++i)
+		norme += vecteur[i] * vecteur[i];
 	norme = sqrt(norme);
 	return norme;
 }
 
 f64 norm_frobenius(const ui32 rows,
-				  const ui32 cols,
-				  const f64* matrix){
+				   const ui32 cols,
+				   const f64* matrix){
 
 	assert(rows != 0 && cols != 0);
 	f64 norme = 0;
+	#pragma omp parallel for reduction(+:norme)
 	for(ui32 i = 0U; i < rows * cols; ++i)
 		norme += matrix[i] * matrix[i];
 	norme = sqrt(norme);
@@ -54,6 +57,7 @@ f64 norm_frobenius(const ui32 rows,
 
 f64* normalization_uniform_vector(const ui32 size,
 								  const f64* vecteur){
+	assert(size != 0);
 	const f64 max = norm_vector(size, vecteur);
 	f64* restrict normed_vector = aligned_alloc(64, sizeof(f64) * size);
 	#pragma omp parallel for schedule(dynamic, 1)

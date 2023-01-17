@@ -7,14 +7,11 @@ f64 GEVV_CLASSIC(const ui32 size,
 				 const f64* vector_y){
 
     f64 result = 0;
-    #pragma omp parallel
-    {
-        #pragma omp for schedule(dynamic, 1) reduction(+:result)
-        for(ui32 i = 0; i < size; ++i){
-            printf("Value of i : %d \n", i);
-            result += factor * vector_x[i] * vector_y[i];
-        }
+
+    for(ui32 i = 0; i < size; ++i){
+        result += factor * vector_x[i] * vector_y[i];
     }
+
     return result;
 }
 
@@ -52,12 +49,12 @@ f64 GEMV_MODIFIED(const ui32 rows,
 
     #pragma omp parallel for schedule(dynamic, 1) reduction(+:result)
     for(ui32 i = 0; i < size_vec; ++i)
-        result += factor * matrix[increment * cols + i] * vector[i];
+        result += factor * matrix[i * cols + increment] * vector[i];
 
     return result;
 }
 
-// factor * A[i: 0...N] * B[j:0...N]
+// factor * A[0....M:increment] * B[0....M:0...N]
 f64* GEMM_MODIFIED(const ui32 rows_A,
                    const ui32 cols_A,
                    const f64 factor, 
@@ -74,7 +71,7 @@ f64* GEMM_MODIFIED(const ui32 rows_A,
     #pragma omp parallel for schedule(dynamic, 1)
 	for(ui32 i = 0U; i < rows_A; ++i){
 		for(ui32 j = 0U; j < cols_B; ++j){
-			result[i] += matrix_A[i * cols_A + increment_A] * matrix_B[i * cols_B + j];
+			result[i] += matrix_A[j * cols_A + increment_A] * matrix_B[j * cols_B + i];
 		}
 	}
     return result;

@@ -16,6 +16,7 @@ add_compile_options(
                       -O3
                       -fno-omit-frame-pointer
                       -g
+                      -lm
                       -march=native -mtune=native -mavx2
                       -fopenmp
                       -flto

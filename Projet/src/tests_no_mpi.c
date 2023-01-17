@@ -66,25 +66,47 @@ int main(){
     f64* __restrict__ Test_H = read_matrix("../Test_H.txt", rows, n_krylov);
 
     // TESTING BLAS FUNCTIONS
-    f64 result = GEVV_CLASSIC(rows, 1.0, vecteur, vecteur);
-    assert(result == 5.0);
-    getchar();
-    f64* __restrict__ result_vector = GEMV_CLASSIC(rows, cols, 1.0,
+    f64 result_gevv_classic = GEVV_CLASSIC(rows, 1.0, vecteur, vecteur);
+    assert(result_gevv_classic == 5.0);
+    f64* __restrict__ result_gemv_classic = GEMV_CLASSIC(rows, cols, 1.0,
                                                    matrix_A, rows, vecteur);
-    assert(fabs(result_vector[0] - 3.0) <= epsilon);
-    assert(fabs(result_vector[1] - 4.0) <= epsilon);
-    assert(fabs(result_vector[2] - 5.0) <= epsilon);
-    getchar();
+    assert(fabs(result_gemv_classic[0] - 3.0) <= epsilon);
+    assert(fabs(result_gemv_classic[1] - 4.0) <= epsilon);
+    assert(fabs(result_gemv_classic[2] - 5.0) <= epsilon);
+    free(result_gemv_classic);
 
-    free(result_vector);
+    f64 result_gemv_modified = GEMV_MODIFIED(rows, cols, 1.0, 1, matrix_A,
+                                             rows, vecteur);
+    assert(result_gemv_modified == 8.0);
+
+    f64* __restrict__ result_gemm_modified = GEMM_MODIFIED(rows, cols, 1.0,
+                                                           1, matrix_A, rows,
+                                                           cols, matrix_A);
+    
+    assert(fabs(result_gemm_modified[0] - 36.0) <= epsilon);
+    assert(fabs(result_gemm_modified[1] - 14.0) <= epsilon);
+    assert(fabs(result_gemm_modified[2] - 6.0) <= epsilon);
+    free(result_gemm_modified);
+
+    // TESTING TOOLS FUNCTIONS
+    f64 result_norm_vector = norm_vector(rows, vecteur);
+    assert(fabs(result_norm_vector - sqrt(5)) <= epsilon);
+
+    f64 result_norm_frobenius = norm_frobenius(rows, cols, matrix_A);
+    assert(fabs(result_norm_frobenius - sqrt(115.0)) <= epsilon);
+
 
     // Testing Arnoldi Methods
 
-    ArnoldiProjection_Classic(rows, cols, n_krylov, vecteur,
+    ArnoldiProjection_Modified(rows, cols, n_krylov, vecteur,
                               Test_A, matrix_Q_C, matrix_H_C);
-    ArnoldiProjection_Modified(rows, cols, n_krylov, vecteur, 
+    ArnoldiProjection_Classic(rows, cols, n_krylov, vecteur, 
                                Test_A, matrix_Q_M, matrix_H_M);
     
+    display_matrix(matrix_Q_M, rows, cols);
+    display_matrix(Test_Q, rows, cols);
+    display_matrix(matrix_H_M, rows, n_krylov);
+    display_matrix(Test_H, rows, n_krylov);
     compare_matrix(rows, cols, matrix_Q_C, rows, cols, Test_Q, epsilon);
     compare_matrix(rows, cols, matrix_Q_M, rows, cols, Test_Q, epsilon);
     compare_matrix(rows, n_krylov, matrix_H_C, rows, n_krylov, Test_H, epsilon);

@@ -31,6 +31,7 @@ void ArnoldiProjection_Modified(const ui32 rows,
 				temp[i] = matrix_Q[i * (n_krylov + 1) + j];
 			}
 			matrix_H[j * n_krylov + k - 1] = GEVV_CLASSIC(rows, 1.0, temp, v);
+			printf("GEVV CLASSIC DONE \n");
 			getchar();
 
 			for(ui32 i = 0U; i < rows; ++i){
