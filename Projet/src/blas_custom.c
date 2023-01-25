@@ -70,6 +70,7 @@ f64* GEMM_MODIFIED(const ui32 rows_A,
 
     #pragma omp parallel for schedule(dynamic, 1)
 	for(ui32 i = 0U; i < rows_A; ++i){
+        result[i] = 0;
 		for(ui32 j = 0U; j < cols_B; ++j){
 			result[i] += matrix_A[j * cols_A + increment_A] * matrix_B[j * cols_B + i];
 		}
