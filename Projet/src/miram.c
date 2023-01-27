@@ -45,7 +45,7 @@ void ArnoldiProjection_Modified(const ui32 rows,
 		else{
 			printf(" Perfect solution !\n");
 			break;
-		}       
+		}
         free(v);
 	}
 	free(normed_vecteur);
@@ -98,4 +98,19 @@ void ArnoldiProjection_Classic(const ui32 rows,
 	}
 	free(normed_vecteur);
 	free(temp);
+}
+
+void IRAM(const ui32 rows_A,
+		  const ui32 cols_A,
+		  const ui32 n_krylov,
+		  const f64* __restrict__ Init_vector,
+		  const f64* __restrict__ matrix_A,
+		  f64* __restrict__ matrix_Q,
+		  f64* __restrict__ matrix_H,
+		  f64* __restrict__ eigenvalues){
+
+	ArnoldiProjection_Modified(rows_A, cols_A, n_krylov, Init_vector, matrix_A,
+								matrix_Q, matrix_H);
+
+	//
 }
