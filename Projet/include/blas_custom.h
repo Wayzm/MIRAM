@@ -38,4 +38,20 @@ f64* GEMM_MODIFIED(const ui32 rows_A,
                    const ui32 cols_B,
                    const f64* __restrict__ matrix_B);
 
+void GEMM_CLASSIC(const ui32 rows_A,
+                  const ui32 cols_A,
+                  const f64 factor,
+                  const f64* __restrict__ matrix_A,
+                  const ui32 rows_B,
+                  const ui32 cols_B,
+                  const f64* __restrict__ matrix_B,
+                  f64* __restrict__ matrix_C);
+
+void GEMM_CLASSIC_NO_C(const ui32 rows_A,
+                       const ui32 cols_A,
+                       const f64 factor,
+                       f64* __restrict__ matrix_A,
+                       const ui32 rows_B,
+                       const ui32 cols_B,
+                       const f64* __restrict__ matrix_B);
 #endif
