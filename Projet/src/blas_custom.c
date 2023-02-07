@@ -24,13 +24,13 @@ f64* GEMV_CLASSIC(const ui32 rows,
                   const f64* __restrict__ vector){
 
     assert(cols == size_vec);
-    f64* __restrict__ result = aligned_alloc(64, sizeof(f64) * size_vec);
+    f64* __restrict__ result = aligned_alloc(64, sizeof(f64) * rows);
     f64 tmp;
     #pragma omp parallel for schedule(dynamic, 1) private(tmp)
     for(ui32 i = 0; i < rows; ++i){
         tmp = 0;
         for(ui32 j = 0; j < size_vec; ++j)
-            tmp += factor * matrix[i * rows + j] * vector[j];
+            tmp += factor * matrix[i * cols + j] * vector[j];
         result[i] = tmp;
     }
     return result;
