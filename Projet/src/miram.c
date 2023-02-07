@@ -115,13 +115,11 @@ void QR_Algorithm(const ui32 rows,
 	// No shift
 	ui32 count = 0;
 
-    display_matrix(matrix_H, n_krylov, n_krylov);
 	// Normalisation of H to avoid overflows
 	f64 norm_H = norm_frobenius(n_krylov, n_krylov, matrix_H);
 	#pragma omp parallel for schedule(static)
 	for(ui32 i = 0; i < n_krylov * n_krylov; ++i)
 		matrix_H[i] = matrix_H[i]/norm_H;
-    display_matrix(matrix_H, n_krylov, n_krylov);
 
 	// Final matrix Qf for QR decomposition
 	f64* __restrict__ matrix_Qf = calloc(n_krylov * n_krylov, sizeof(f64));
@@ -155,15 +153,12 @@ void QR_Algorithm(const ui32 rows,
 		matrix_Q[i * n_krylov + i + 1] = sigma;
 		matrix_Q[i * n_krylov + n_krylov + i] = -sigma;
 
-		printf("\n");
-		display_matrix(matrix_Q, n_krylov, n_krylov);
 
 		GEMM_CLASSIC(n_krylov, n_krylov, 1.0, matrix_Q, n_krylov, n_krylov, matrix_H, matrix_R);
 		memcpy(matrix_H, matrix_R, n_krylov * n_krylov * sizeof(f64));
 		GEMM_CLASSIC_NO_C(n_krylov, n_krylov, 1.0, matrix_Qf, n_krylov, n_krylov, matrix_Q);
 		free(matrix_Q);
 	}
-	display_matrix(matrix_H, n_krylov, n_krylov);
 	free(matrix_R);
 	free(matrix_Qf);
 }
