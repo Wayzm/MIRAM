@@ -4,7 +4,7 @@ double* read_matrix(const char* filename,
 					const ui32 rows,
 				    const ui32 cols){
 
-	double* restrict matrix = aligned_alloc(64, sizeof(double) * rows * cols);
+	double* __restrict__ matrix = aligned_alloc(64, sizeof(double) * rows * cols);
 	FILE* matrix_file = fopen(filename, "r");
 
 	if (!matrix_file){
@@ -17,7 +17,7 @@ double* read_matrix(const char* filename,
     	matrix[idx] = number;
     	++idx;
     }
-
+	fclose(matrix_file);
     return matrix;
 }
 
