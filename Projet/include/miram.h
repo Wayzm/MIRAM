@@ -22,15 +22,15 @@ void ArnoldiProjection_Classic(const ui32 rows_A,
 								 f64* __restrict__ matrix_V,
 								 f64* __restrict__ matrix_H);
 
-void QR_Algorithm(const ui32 rows,
-				  const ui32 n_krylov,
-				  f64* __restrict__ matrix_H,
-				  f64* __restrict__ matrix_V);
+void QR_Decomposition(const ui32 n_krylov,
+					  const ui32 shift,
+				  	  f64* __restrict__ matrix_H,
+					  f64* __restrict__ matrix_Q);
 
 void IRAM(const ui32 rows_A,
 		  const ui32 cols_A,
 		  const ui32 n_krylov,
-		  const ui32 shift,
+		  const ui32 nbr_eigen,
 		  const f64* __restrict__ Init_vector,
 		  const f64* __restrict__ matrix_A,
 		  f64* __restrict__ matrix_V,

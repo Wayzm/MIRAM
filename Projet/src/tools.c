@@ -34,7 +34,7 @@ f64* gen_matrix(const ui32 rows,
 
 f64 norm_vector(const ui32 size,
 				const f64* vecteur){
-	assert(size != 0);
+	assert(size > 0);
 	f64 norme = 0;
 	for(ui32 i = 0; i < size; ++i)
 		norme += vecteur[i] * vecteur[i];
@@ -46,10 +46,11 @@ f64 norm_frobenius(const ui32 rows,
 				   const ui32 cols,
 				   const f64* matrix){
 
-	assert(rows != 0 && cols != 0);
+	assert(rows > 0 && cols > 0);
 	f64 norme = 0;
 	for(ui32 i = 0; i < rows * cols; ++i)
 		norme += matrix[i] * matrix[i];
+
 	norme = sqrt(norme);
 	return norme;
 }
