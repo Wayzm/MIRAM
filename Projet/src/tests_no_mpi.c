@@ -119,19 +119,24 @@ int main(){
     f64* __restrict__ qr_Q = aligned_alloc(64, sizeof(f64) * 6 * 6);
 
     f64 norm_H = norm_frobenius(8, 6, matrix_H_M);
-	#pragma omp parallel for schedule(static)
-	for(ui32 i = 0; i < 6 * 6; ++i)
-		matrix_H_M[i] = matrix_H_M[i]/norm_H;
+	// #pragma omp parallel for schedule(static)
+	// for(ui32 i = 0; i < 6 * 6; ++i)
+	// 	matrix_H_M[i] = matrix_H_M[i]/norm_H;
 
     display_matrix(matrix_H_M, 6, 6);
-    QR_Decomposition(6, 5, matrix_H_M, qr_Q);
-    printf("\nNext \n");
-    display_matrix(matrix_H_M, 6, 6);
+    for(ui32 i = 0; i < 100; ++i){
+        QR_Decomposition(6, 6 - i%3, matrix_H_M, qr_Q);
+        // printf("\nIter : %d \n", i);
+        // f64* qr_Q_T = TRANSPOSE_MAT(6, 6, qr_Q);
+        // GEMM_CLASSIC_NO_C(6, 6,1.0, qr_Q_T, 6, 6, qr_Q, 0);
+        // display_matrix(qr_Q_T, 6, 6);
+        // free(qr_Q_T);
+    }
     printf("\n");
-    f64* qr_Q_T = TRANSPOSE_MAT(6, 6, qr_Q);
-    GEMM_CLASSIC_NO_C(6, 6,1.0, qr_Q_T, 6, 6, qr_Q, 0);
-    display_matrix(qr_Q_T, 6, 6);
-    free(qr_Q_T);
+    // f64* qr_Q_T = TRANSPOSE_MAT(6, 6, qr_Q);
+    // GEMM_CLASSIC_NO_C(6, 6,1.0, qr_Q_T, 6, 6, qr_Q, 0);
+    display_matrix(matrix_H_M, 6, 6);
+    // free(qr_Q_T);
     matrix_H_M[6 * 7 - 1] = matrix_H_M[6 * 7 - 1] / norm_H;
     f64* __restrict__ qr_vect_1 = aligned_alloc(64, sizeof(f64) * 6);
     for(ui32 i = 0; i < 6; ++i)

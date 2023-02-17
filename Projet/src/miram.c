@@ -116,15 +116,12 @@ void ArnoldiProjection_Classic(const ui32 rows,
 	free(temp);
 }
 
-// Strat, on a une variable qui sera modifié si le coef de ritz est bas
-// une boucle while qui itère tant que la précision n'est pas celle demandée
-// une boucle while imbriqué dont on sort pour MPI_Barrier et faire les coms
 void QR_Decomposition(const ui32 n_krylov,
 					  const ui32 shift,
 				  	  f64* __restrict__ matrix_H,
 					  f64* __restrict__ matrix_Q){
 
-	// Normalisation of H to avoid overflows
+	// // Normalisation of H to avoid overflows
 	f64 norm_H = norm_frobenius(n_krylov, n_krylov, matrix_H);
 	#pragma omp parallel for schedule(static)
 	for(ui32 i = 0; i < n_krylov * n_krylov; ++i)
@@ -140,19 +137,14 @@ void QR_Decomposition(const ui32 n_krylov,
 	}
 
 	// Final matrix Qf for QR decomposition
-	f64* __restrict__ q_T = malloc(n_krylov * n_krylov * sizeof(f64));
+	f64* __restrict__ q_T = calloc(n_krylov * n_krylov, sizeof(f64));
 	for(ui32 i = 0; i < n_krylov; ++i){
 		for(ui32 j = 0; j < n_krylov; ++j){
 			if(i == j){
 				q_T[i * n_krylov + j] = 1.0;
 			}
-			else{
-				q_T[i * n_krylov + j] = 0;
-			}
 		}
 	}
-
-	f64* __restrict__ matrix_R = malloc(sizeof(f64) * n_krylov * n_krylov);
 
 	// Computing Qf for QR decomposition
 	for(ui32 i = 0; i < n_krylov - 1; ++i){
@@ -166,75 +158,33 @@ void QR_Decomposition(const ui32 n_krylov,
 		// We select the small square needed for the QR decomposition
 		const f64 h_11 = matrix_H[i * n_krylov + i];
 		const f64 h_21 = matrix_H[i * n_krylov + n_krylov + i];
-		const f64 gamma = h_11 / (sqrt(h_21 * h_21 + h_11 * h_11));
-		const f64 sigma = h_21 / (sqrt(h_21 * h_21 + h_11 * h_11));
-		matrix_Q[i * n_krylov + i] = gamma;
-		matrix_Q[i * n_krylov + n_krylov + i + 1] = gamma;
-		matrix_Q[i * n_krylov + i + 1] = sigma;
-		matrix_Q[i * n_krylov + n_krylov + i] = -sigma;
+		const f64 denom = sqrt(h_21 * h_21 + h_11 * h_11);
+		const f64 gamma = fabs(h_11) / denom;
+		const f64 sigma = -h_21 / denom;
 
-
-		GEMM_CLASSIC(n_krylov, n_krylov, 1.0, small_Q, n_krylov, n_krylov, matrix_H, matrix_R);
-		memcpy(matrix_H, matrix_R, n_krylov * n_krylov * sizeof(f64));
+		small_Q[i * n_krylov + i] = gamma;
+		small_Q[i * n_krylov + n_krylov + i + 1] = gamma;
+		small_Q[i * n_krylov + i + 1] = -sigma;
+		small_Q[i * n_krylov + n_krylov + i] = sigma;
 		GEMM_CLASSIC_NO_C(n_krylov, n_krylov, 1.0, q_T, n_krylov, n_krylov, small_Q, 0);
 		free(small_Q);
 	}
-
 	f64* __restrict__ Q = TRANSPOSE_MAT(n_krylov, n_krylov, q_T);
+	GEMM_CLASSIC_NO_C(n_krylov, n_krylov, 1.0, matrix_H, n_krylov, n_krylov, q_T, 0);
 	GEMM_CLASSIC_NO_C(n_krylov, n_krylov, 1.0, matrix_H, n_krylov, n_krylov, Q, 1);
 
 	#pragma omp parallel for schedule(static)
 	for(ui32 i = 0; i < n_krylov * n_krylov; ++i)
 		matrix_H[i] = matrix_H[i] * norm_H;
 
-	// // deshift
-	// for(ui32 i = 0; i < n_krylov; ++i){
-	// 	for(ui32 j = 0; j < n_krylov; ++j){
-	// 		if(i == j)
-	// 			matrix_H[i * n_krylov + j] = matrix_H[i * n_krylov + j] + shift_value;
-	// 	}
-	// }
+	// deshift
+	for(ui32 i = 0; i < n_krylov; ++i){
+		for(ui32 j = 0; j < n_krylov; ++j){
+			if(i == j)
+				matrix_H[i * n_krylov + j] = matrix_H[i * n_krylov + j] + shift_value;
+		}
+	}
 	memcpy(matrix_Q, Q, sizeof(f64) * n_krylov * n_krylov);
-	free(matrix_R);
 	free(q_T);
 	free(Q);
-}
-
-void IRAM(const ui32 rows_A,
-		  const ui32 cols_A,
-		  const ui32 n_krylov,
-		  const ui32 nbr_eigen,
-		  const f64* __restrict__ Init_vector,
-		  const f64* __restrict__ matrix_A,
-		  f64* __restrict__ matrix_V,
-		  f64* __restrict__ matrix_H,
-		  const ui32 nbr_eigenvalues,
-		  f64* __restrict__ eigenvalues){
-
-	ArnoldiProjection_Modified(rows_A, cols_A, n_krylov, Init_vector, matrix_A,
-								matrix_V, matrix_H);
-
-	assert(nbr_eigenvalues <= n_krylov);
-	const ui32 shift = n_krylov - nbr_eigen;
-
-	// Remove the last column of V
-	f64* __restrict__ V_krylov = aligned_alloc(64, sizeof(f64) * rows_A * n_krylov);
-	int cnt_v = 0;
-	for(ui32 i = 0; i < (n_krylov + 1) * rows_A; ++i ){
-		cnt_v ++;
-		if(cnt_v%(n_krylov + 1) == 0){
-			cnt_v = 0;
-			continue;
-		}
-		V_krylov[i] = matrix_V[i];
-	}
-
-	// for(ui32 i = 0; i < shift; ++i){
-	// 	f64* __restrict__ matrix_Q = QR_Decomposition(n_krylov, i, matrix_H);
-	// 	GEMM_CLASSIC_NO_C(rows_A, n_krylov, 1.0, V_krylov, n_krylov, n_krylov, matrix_Q, 1);
-	// 	free(matrix_Q);
-	// }
-
-	free(V_krylov);
-	//
 }
