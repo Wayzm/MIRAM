@@ -20,7 +20,7 @@ Ce programme consiste à une réduction de modèle sur des matrices de grandes t
 | cols                  | Nombre de colonnes de A                               |
 | Init_vectors          | Vecteurs aléatoirs                                    |
 | Q                     | Matrice issue du QR de H                              |
-| f<sub>m</sub>         | Dernière valeurs non-nul de H                         |
+| f<sub>n</sub>         | Dernière valeurs non-nul de H                         |
 | shift                 | Le dernier élément de la diagonale pour QR shifté     |
 
 ## Instruction
@@ -134,9 +134,18 @@ $$
 ### Coefficient de Ritz
 
 Après avoir répeter le processus QR un certain nombre de fois, notre matrice H va converger vers des valeurs prores et notre matrice V va contenir nos vecteurs propres.
+Soit u le vecteur propre dominant de H dans l'espace de A, c'est-à-dire la première colonne de V.
+$$
+\lambda
+$$
+le vecteur propre dominant de H, soit la première valeur de H.
+Pour les déterminer on va calculer :
+$$
+A * u - \lambda * u
+$$
+Et regarder relativiser cette différence pour connaitre notre différence relative entre le résultat attendue.
+Si cette différence est trop importante, on recommence le processus avec un nouveau vecteur initiale qui sera calculer à partir du f<sub>n</sub> et de des vecteurs propres.
 
-Soit :
-$$\lamba  $$
 ## Crédit
 
 1. Pour toutes information sur GPTune, voir : https://gptune.lbl.gov/about.
