@@ -20,7 +20,7 @@ Ce programme consiste à une réduction de modèle sur des matrices de grandes t
 | cols                  | Nombre de colonnes de A                               |
 | Init_vectors          | Vecteurs aléatoirs                                    |
 | Q                     | Matrice issue du QR de H                              |
-| f_m                   | Dernière valeurs non-nul de H                         |
+| f<sub>m</sub>         | Dernière valeurs non-nul de H                         |
 | shift                 | Le dernier élément de la diagonale pour QR shifté     |
 
 ## Instruction
@@ -34,7 +34,9 @@ make -j
 ```
 ### Utilisation
 
-Pour utiliser ce programme, une matrice doit être fournis en format dense. Le chemin du ficher doit être
+```shell
+mpiexec -n <number of processus> ./MIRAM <path to file> <rows> <cols> <number of desired eigen values>
+```
 
 ## Fonctionnement de l'algorithme
 
@@ -44,6 +46,20 @@ On obtient alors cette relation : AV<sub>n</sub> = V<sub>n</sub>H<sub>n</sub> + 
 V<sub>n</sub> est notre matrice qui va nous permettre de faire une transition entre le sous espace de krylov n et l'espace de A.
 H<sub>n</sub> est notre matrice hessenberg supérieur résultante de la projection d'Arnoldi. Cependant, sur sa ligne n + 1, elle aura un coefficient non nul. Ce coefficient est notre f<sub>n</sub>. Il nous permet de savoir à quel point on a réussi à réduire A dans notre sous espace.
 
+Algorithme de Gram–Schmidt utilisé pour la projection d'Arnoldi:
+```latex
+Input : A, rows, cols, Init\_Vectors, n
+Output : V, H
+for k=1:n
+    w = A_k % k-ème colonne de A
+    for j = 1:k-1
+        r_{jk}=q^{t}_j * w
+        w = w - r_{jk} * q_j
+    end
+    r_{kk} = || w ||_2
+    q_k = w / r_{kk}
+end
+```
 
 ### Multi Processus
 
@@ -67,5 +83,65 @@ graph TD;
     VQ-->V;
     RQ-->H;
 ```
-Pour calculer Q, on utilise la rotation de Givens, qui nous permet de transformer H en une matrice triangulaire étape par étape.
+Pour calculer Q, on utilise la rotation de Givens, qui nous permet de transformer H en une matrice triangulaire étape par étape. On calcule les matrices Gi :
+$$
+G_i =
+\left(\begin{array}{cc}
+\gamma & -\sigma\\
+\sigma & \gamma
+\end{array}\right)
+$$
+$$
+\left(\begin{array}{cc}
+\gamma & -\sigma\\
+\sigma & \gamma
+\end{array}\right)
+\left(\begin{array}{cc}
+a & b\\
+c & d
+\end{array}\right)
+=
+\left(\begin{array}{cc}
+r & s\\
+0 & p
+\end{array}\right)
+$$
+A partir de cette relation on peut déterminer les coefficients de la matrice à gauche :
+$$
+\gamma = a / \sqrt(a² + b²)
+\newline
+\sigma = - b / \sqrt(a² + b²)
+$$
+Il est possible d'overflow ou d'underflow avec cette formule mais on peut facilement éviter ce soucis en normalisant la matrice à triangulariser.
+Pour obtenir Q on procède au calcul suivant :
+$$
+Q^T = G_{n-1} * G_{n - 2} * ... * G_1
+$$
+Pour une matrice hessenberg de taille quelconque, les Gi ont cette forme :
+$$
+G_i =
+\left(\begin{array}{cc}
+1 & 0 & ... & ... & ... & ... & 0\\
+0 & 1 & 0 & ... & ... & ... & ... \\
+... & 0 & \gamma & -\sigma & 0 & ... & ... \\
+0 & ... & \sigma & \gamma & 0  & ... & ... \\
+... & ... & ... & ... & 1 & ... & ... \\
+... & ... & ... & ... & 0 & ... & ... \\
+0 & ... & ... & ... & ... & 0 & 1 \\
+\end{array}\right)
+$$
+
+### Coefficient de Ritz
+
+Après avoir répeter le processus QR un certain nombre de fois, notre matrice H va converger vers des valeurs prores et notre matrice V va contenir nos vecteurs propres.
+
+Soit :
+$$\lamba  $$
+## Crédit
+
+1. Pour toutes information sur GPTune, voir : https://gptune.lbl.gov/about.
+2. Nahid Emad and Serge G. Petiton. Unite and Conquer Approach for High Scale
+Numerical Computing. J. Comput. Science, 14 :5–14, 2016.
+3. S.-A. Shahzadeh-Fazeli, Nahid Emad, and Zifan Liu. A Key to Choose Subspace Size in
+Implicitly Restarted Arnoldi Method. Numerical Algorithms, 70(2) :407–426, 2015.
 
