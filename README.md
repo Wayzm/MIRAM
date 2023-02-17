@@ -148,7 +148,7 @@ Si cette différence est trop importante, on recommence le processus avec un nou
 
 ### Complexité
 
-Soit CT la complexité en temps de MIRAMs. CT = α + O (2 × n × [k × (Init_vectors) + best_init_vector² − k × best_init_vecor
+Soit CT la complexité en temps de MIRAMs. CT = α + O (n² × [k × (Init_vectors) + best_init_vector² − k × best_init_vecor
 ]), α est la complexité de la partie séquentielle de l'algorithme.
 La complexité en espace de MIRAM est de 0(n² + n x nombre_de_processus).
 
