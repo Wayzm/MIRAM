@@ -146,6 +146,12 @@ $$
 Et regarder relativiser cette différence pour connaitre notre différence relative entre le résultat attendue.
 Si cette différence est trop importante, on recommence le processus avec un nouveau vecteur initiale qui sera calculer à partir du f<sub>n</sub> et de des vecteurs propres.
 
+### Complexité
+
+Soit CT la complexité en temps de MIRAMs. CT = α + O (2 × n × [k × (Init_vectors) + best_init_vector² − k × best_init_vecor
+]), α est la complexité de la partie séquentielle de l'algorithme.
+La complexité en espace de MIRAM est de 0(n² + n x nombre_de_processus).
+
 ## Crédit
 
 1. Pour toutes information sur GPTune, voir : https://gptune.lbl.gov/about.
