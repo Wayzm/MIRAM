@@ -21,6 +21,7 @@ Ce programme consiste à une réduction de modèle sur des matrices de grandes t
 | Init_vectors          | Vecteurs aléatoirs                                    |
 | Q                     | Matrice issue du QR de H                              |
 | f_m                   | Dernière valeurs non-nul de H                         |
+| shift                 | Le dernier élément de la diagonale pour QR shifté     |
 
 ## Instruction
 ### Build
@@ -62,6 +63,7 @@ graph TD;
     H-->R;
     R-->RQ;
     Q-->RQ;
+    Q-->VQ;
     VQ-->V;
     RQ-->H;
 ```
