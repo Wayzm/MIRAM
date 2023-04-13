@@ -83,9 +83,9 @@ int main(){
                                                            1, matrix_A, rows,
                                                            cols, matrix_A);
     
-    assert(fabs(result_gemm_modified[0] - 36.0) <= epsilon);
-    assert(fabs(result_gemm_modified[1] - 14.0) <= epsilon);
-    assert(fabs(result_gemm_modified[2] - 6.0) <= epsilon);
+    assert(fabs(result_gemm_modified[0] - 6.0) <= epsilon);
+    assert(fabs(result_gemm_modified[1] - 11.0) <= epsilon);
+    assert(fabs(result_gemm_modified[2] - 18.0) <= epsilon);
     free(result_gemm_modified);
 
     // TESTING TOOLS FUNCTIONS
@@ -103,10 +103,6 @@ int main(){
     ArnoldiProjection_Classic(rows, cols, n_krylov, vecteur, 
                                Test_A, matrix_Q_M, matrix_H_M);
     
-    display_matrix(matrix_Q_M, rows, cols);
-    display_matrix(Test_Q, rows, cols);
-    display_matrix(matrix_H_M, rows, n_krylov);
-    display_matrix(Test_H, rows, n_krylov);
     compare_matrix(rows, cols, matrix_Q_C, rows, cols, Test_Q, epsilon);
     compare_matrix(rows, cols, matrix_Q_M, rows, cols, Test_Q, epsilon);
     compare_matrix(rows, n_krylov, matrix_H_C, rows, n_krylov, Test_H, epsilon);

@@ -54,7 +54,7 @@ f64 GEMV_MODIFIED(const ui32 rows,
     return result;
 }
 
-// factor * A[0....M:increment] * B[0....M:0...N]
+// factor * A[0....M:increment] * B
 f64* GEMM_MODIFIED(const ui32 rows_A,
                    const ui32 cols_A,
                    const f64 factor, 
@@ -72,7 +72,7 @@ f64* GEMM_MODIFIED(const ui32 rows_A,
 	for(ui32 i = 0U; i < rows_A; ++i){
         result[i] = 0;
 		for(ui32 j = 0U; j < cols_B; ++j){
-			result[i] += matrix_A[j * cols_A + increment_A] * matrix_B[j * cols_B + i];
+			result[i] += matrix_A[j * cols_A + increment_A] * matrix_B[i * cols_B + j];
 		}
 	}
     return result;
