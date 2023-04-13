@@ -17,7 +17,7 @@ int main(int argc, char** argv){
 	ui32 cols = 0;
 	ui32 rows = 0;
 	ui32 n;
-	f64 tmp = 0;
+	f64 tmp = 0; // Only used for restarting the process
 	f64 f_m;
 	ui32 status_iram = 0;
 	int rank, comm_size, best_rank, res;
