@@ -57,7 +57,7 @@ f64 GEMV_MODIFIED(const ui32 rows,
 // factor * A[0....M:increment] * B
 f64* GEMM_MODIFIED(const ui32 rows_A,
                    const ui32 cols_A,
-                   const f64 factor, 
+                   const f64 factor,
                    const ui32 increment_A,
                    const f64* __restrict__ matrix_A,
                    const ui32 rows_B,

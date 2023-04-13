@@ -12,7 +12,7 @@ f64* gen_matrix(const ui32 rows,
 	assert(rows != 0 && cols != 0);
 
 	f64* restrict matrix = aligned_alloc(64, sizeof(f64) * cols * rows);
-	
+
 	if(rows != 1){
 		for(ui32 i = 0U; i < rows; ++i){
 			for(ui32 j = 0U; j < cols; ++j){
@@ -107,7 +107,7 @@ f64 verify_matrix(const ui32 rows,
 		}
 	}
 	f64 norme = norm_frobenius(rows, cols, matrix);
-	
+
 	free(matrix);
 	return norme;
 }

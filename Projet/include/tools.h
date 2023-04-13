@@ -34,7 +34,7 @@ void compare_matrix(const unsigned rows_A,
 				   const f64* __restrict__ matrix_B,
 				   const f64 eps);
 
-f64 verify_matrix(const ui32 rows, 
+f64 verify_matrix(const ui32 rows,
 					const ui32 cols,
 					const f64* __restrict__ matrix);
 

@@ -5,7 +5,7 @@
 
 /***
  * GEVV_CLASSIC computes a normal vector * vector : a = b * x * y
- * GEMV_CLASSIC computes a normal matrix * vector : z = a * M * x 
+ * GEMV_CLASSIC computes a normal matrix * vector : z = a * M * x
  * GEMV_MODIFIED computes the nth column of the matrix * vector : a = b * M[n + cols] * x
  * GEMM_MODIFIED computes the nth column of the matrix A  and  matrix B : x = a * A[n + cols] * B[n + cols]
  ***/
@@ -31,7 +31,7 @@ f64 GEMV_MODIFIED(const ui32 rows,
 
 f64* GEMM_MODIFIED(const ui32 rows_A,
                    const ui32 cols_A,
-                   const f64 factor, 
+                   const f64 factor,
                    const ui32 increment_A,
                    const f64* __restrict__ matrix_A,
                    const ui32 rows_B,
