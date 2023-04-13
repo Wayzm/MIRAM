@@ -21,6 +21,13 @@ f64* GEMV_CLASSIC(const ui32 rows,
                   const ui32 size_vec,
                   const f64* __restrict__ vector);
 
+void GEMV_CLASSIC_NO_R(const ui32 rows,
+                       const ui32 cols,
+                       const f64* __restrict__ matrix,
+                       const ui32 size_vec,
+                       f64* __restrict__ vector,
+                       const ui32 mode);
+
 f64 GEMV_MODIFIED(const ui32 rows,
                   const ui32 cols,
                   const f64 factor,

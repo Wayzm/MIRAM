@@ -124,6 +124,12 @@ void QR_Decomposition(const ui32 n_krylov,
 				  	  f64* __restrict__ matrix_H,
 					  f64* __restrict__ matrix_Q){
 
+	// Normalisation of H to avoid overflows
+	f64 norm_H = norm_frobenius(n_krylov, n_krylov, matrix_H);
+	#pragma omp parallel for schedule(static)
+	for(ui32 i = 0; i < n_krylov * n_krylov; ++i)
+		matrix_H[i] = matrix_H[i]/norm_H;
+
 	// shift reduction
 	const f64 shift_value = matrix_H[shift * n_krylov + shift];
 	for(ui32 i = 0; i < n_krylov; ++i){
@@ -132,12 +138,6 @@ void QR_Decomposition(const ui32 n_krylov,
 				matrix_H[i * n_krylov + j] = matrix_H[i * n_krylov + j] - shift_value;
 		}
 	}
-
-	// Normalisation of H to avoid overflows
-	f64 norm_H = norm_frobenius(n_krylov, n_krylov, matrix_H);
-	#pragma omp parallel for schedule(static)
-	for(ui32 i = 0; i < n_krylov * n_krylov; ++i)
-		matrix_H[i] = matrix_H[i]/norm_H;
 
 	// Final matrix Qf for QR decomposition
 	f64* __restrict__ q_T = malloc(n_krylov * n_krylov * sizeof(f64));
@@ -156,7 +156,7 @@ void QR_Decomposition(const ui32 n_krylov,
 
 	// Computing Qf for QR decomposition
 	for(ui32 i = 0; i < n_krylov - 1; ++i){
-		f64* __restrict__ small_Q = malloc(n_krylov * n_krylov * sizeof(f64));
+		f64* __restrict__ small_Q = calloc(n_krylov * n_krylov, sizeof(f64));
 		for(ui32 j = 0; j < n_krylov; ++j){
 			for(ui32 k = 0; k < n_krylov; ++k){
 				if (j == k)
@@ -166,14 +166,12 @@ void QR_Decomposition(const ui32 n_krylov,
 		// We select the small square needed for the QR decomposition
 		const f64 h_11 = matrix_H[i * n_krylov + i];
 		const f64 h_21 = matrix_H[i * n_krylov + n_krylov + i];
-		f64 denom = h_21 * h_21 + h_11 * h_11;
-		denom = sqrt(denom);
-		const f64 gamma = h_11 / denom;
-		const f64 sigma = h_21 / denom;
-		small_Q[i * n_krylov + i] = gamma;
-		small_Q[i * n_krylov + n_krylov + i + 1] = gamma;
-		small_Q[i * n_krylov + i + 1] = sigma;
-		small_Q[i * n_krylov + n_krylov + i] = -sigma;
+		const f64 gamma = h_11 / (sqrt(h_21 * h_21 + h_11 * h_11));
+		const f64 sigma = h_21 / (sqrt(h_21 * h_21 + h_11 * h_11));
+		matrix_Q[i * n_krylov + i] = gamma;
+		matrix_Q[i * n_krylov + n_krylov + i + 1] = gamma;
+		matrix_Q[i * n_krylov + i + 1] = sigma;
+		matrix_Q[i * n_krylov + n_krylov + i] = -sigma;
 
 
 		GEMM_CLASSIC(n_krylov, n_krylov, 1.0, small_Q, n_krylov, n_krylov, matrix_H, matrix_R);
@@ -182,19 +180,20 @@ void QR_Decomposition(const ui32 n_krylov,
 		free(small_Q);
 	}
 
+	f64* __restrict__ Q = TRANSPOSE_MAT(n_krylov, n_krylov, q_T);
+	GEMM_CLASSIC_NO_C(n_krylov, n_krylov, 1.0, matrix_H, n_krylov, n_krylov, Q, 1);
+
 	#pragma omp parallel for schedule(static)
 	for(ui32 i = 0; i < n_krylov * n_krylov; ++i)
 		matrix_H[i] = matrix_H[i] * norm_H;
 
-	f64* __restrict__ Q = TRANSPOSE_MAT(n_krylov, n_krylov, q_T);
-	GEMM_CLASSIC_NO_C(n_krylov, n_krylov, 1.0, matrix_H, n_krylov, n_krylov, Q, 1);
-	// deshift
-	for(ui32 i = 0; i < n_krylov; ++i){
-		for(ui32 j = 0; j < n_krylov; ++j){
-			if(i == j)
-				matrix_H[i * n_krylov + j] = matrix_H[i * n_krylov + j] + shift_value;
-		}
-	}
+	// // deshift
+	// for(ui32 i = 0; i < n_krylov; ++i){
+	// 	for(ui32 j = 0; j < n_krylov; ++j){
+	// 		if(i == j)
+	// 			matrix_H[i * n_krylov + j] = matrix_H[i * n_krylov + j] + shift_value;
+	// 	}
+	// }
 	memcpy(matrix_Q, Q, sizeof(f64) * n_krylov * n_krylov);
 	free(matrix_R);
 	free(q_T);

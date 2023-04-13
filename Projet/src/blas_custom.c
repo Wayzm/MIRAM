@@ -36,6 +36,43 @@ f64* GEMV_CLASSIC(const ui32 rows,
     return result;
 }
 
+void GEMV_CLASSIC_NO_R(const ui32 rows,
+                       const ui32 cols,
+                       const f64* __restrict__ matrix,
+                       const ui32 size_vec,
+                       f64* __restrict__ vector,
+                       const ui32 mode){
+    assert(cols == size_vec && rows == size_vec);
+    if(mode == 0){ // A*v
+        f64* __restrict__ tmp = malloc(sizeof(f64) * size_vec);
+        f64 value = 0;
+        #pragma omp parallel for schedule(static) private(value)
+        for(ui32 i = 0; i < rows; ++i){
+            for(ui32 j = 0; j < cols; ++j){
+                value += vector[j] * matrix[i * cols + j];
+            }
+            tmp[i] = value;
+            value = 0;
+        }
+        memcpy(vector, tmp, sizeof(f64) * size_vec);
+        free(tmp);
+    }
+    else { // v * A
+        f64* __restrict__ tmp = malloc(sizeof(f64) * size_vec);
+        f64 value = 0;
+        #pragma omp parallel for schedule(static) private(value)
+        for(ui32 i = 0; i < cols; ++i){
+            for(ui32 j = 0; j < rows; ++j){
+                value += vector[j] * matrix[j * cols + i];
+            }
+            tmp[i] = value;
+            value = 0;
+        }
+        memcpy(vector, tmp, sizeof(f64) * size_vec);
+        free(tmp);
+    }
+}
+
 // factor * M[i;0...N] * vector
 f64 GEMV_MODIFIED(const ui32 rows,
                   const ui32 cols,
@@ -120,19 +157,19 @@ void GEMM_CLASSIC_NO_C(const ui32 rows_A,
         for(ui32 i = 0; i < rows_B; ++i){
             for(ui32 j = 0; j < cols_A; ++j){
                 for(ui32 k = 0; k < cols_B; ++k){
-                    tmp += matrix_B[i * cols_B + k] * matrix_A[j + cols_A * k];
+                    tmp += matrix_B[i * cols_B + k] * matrix_A[k + cols_A * j];
                 }
-                matrix_C[i * cols_A + j] = factor * tmp;
+                matrix_C[i * cols_B + j] = factor * tmp;
                 tmp = 0;
             }
         }
     }
-    else{
+    else{ // left side
         assert(cols_A == rows_B && cols_A == cols_B);
         for(ui32 i = 0; i < rows_A; ++i){
             for(ui32 j = 0; j < cols_B; ++j){
                 for(ui32 k = 0; k < cols_A; ++k){
-                    tmp += matrix_A[i * cols_A + k] * matrix_B[j + cols_B * k];
+                    tmp += matrix_A[i * cols_A + k] * matrix_B[k + cols_B * j];
                 }
                 matrix_C[i * cols_B + j] = factor * tmp;
                 tmp = 0;

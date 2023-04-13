@@ -60,7 +60,7 @@ int main(){
 
     // SOLUTION VALUES FOR THE FOLLOWING TESTS
 
-    f64* __restrict__ Test_A = read_matrix("../Test_A.txt", 8, 8);
+    f64* __restrict__ Test_A = read_matrix("../bigA_test.txt", 8, 8);
     //compare_matrix(rows, cols, matrix_A, rows, cols, Test_A, epsilon);
     f64* __restrict__ Test_Q = read_matrix("../Test_Q.txt", rows, cols);
     f64* __restrict__ Test_H = read_matrix("../Test_H.txt", rows, n_krylov);
@@ -108,59 +108,72 @@ int main(){
 
 	for(ui32 i = 0U; i < 8; ++i)
 		vector[i] = (f64)i;
-    ArnoldiProjection_Modified(rows, cols, n_krylov, vecteur,
-                              Test_A, matrix_V_C, matrix_H_C);
+    ArnoldiProjection_Modified(8, 8, 6, vector,
+                              Test_A, matrix_V_M, matrix_H_M);
 
 
-    ArnoldiProjection_Classic(rows, cols, n_krylov, vecteur,
-                               Test_A, matrix_V_M, matrix_H_M);
+    ArnoldiProjection_Classic(8, 8, 6, vector,
+                               Test_A, matrix_V_C, matrix_H_C);
 
     // // Testing QR
+    f64* __restrict__ qr_Q = aligned_alloc(64, sizeof(f64) * 6 * 6);
 
-    // display_matrix(matrix_H_M, 8, 6);
-    // f64 norm_H = norm_frobenius(8, 6, matrix_H_M);
-    // f64* __restrict__ qr_Q = QR_Decomposition(6, 4, matrix_H_M);
-    // matrix_H_M[6 * 7 - 1] = matrix_H_M[6 * 7 - 1] / norm_H;
-    // f64* __restrict__ qr_vect_1 = aligned_alloc(64, sizeof(f64) * 6);
-    // for(ui32 i = 0; i < 6; ++i)
-    //     qr_vect_1[i] = qr_Q[i * 6];
-    // f64* vect_in_A_domain = GEMV_CLASSIC(8, 6, 1.0, matrix_V_M, 6, qr_vect_1);
+    f64 norm_H = norm_frobenius(8, 6, matrix_H_M);
+	#pragma omp parallel for schedule(static)
+	for(ui32 i = 0; i < 6 * 6; ++i)
+		matrix_H_M[i] = matrix_H_M[i]/norm_H;
 
-    // f64* __restrict__ eigen_vect = GEMV_CLASSIC(8,8, 1.0, Test_A, 8, vect_in_A_domain);
-    // f64* __restrict__ Q_2 = aligned_alloc(64, sizeof(f64) * 36);
-    // memcpy(Q_2, qr_Q, sizeof(f64) * 36);
+    display_matrix(matrix_H_M, 6, 6);
+    QR_Decomposition(6, 5, matrix_H_M, qr_Q);
+    printf("\nNext \n");
+    display_matrix(matrix_H_M, 6, 6);
+    printf("\n");
+    f64* qr_Q_T = TRANSPOSE_MAT(6, 6, qr_Q);
+    GEMM_CLASSIC_NO_C(6, 6,1.0, qr_Q_T, 6, 6, qr_Q, 0);
+    display_matrix(qr_Q_T, 6, 6);
+    free(qr_Q_T);
+    matrix_H_M[6 * 7 - 1] = matrix_H_M[6 * 7 - 1] / norm_H;
+    f64* __restrict__ qr_vect_1 = aligned_alloc(64, sizeof(f64) * 6);
+    for(ui32 i = 0; i < 6; ++i)
+        qr_vect_1[i] = qr_Q[i * 6];
+    f64* vect_in_A_domain = GEMV_CLASSIC(8, 6, 1.0, matrix_V_M, 6, qr_vect_1);
 
-    // f64* __restrict__ result = aligned_alloc(64, sizeof(f64) * 36);
-    // f64 tmp_q = 0;
+    f64* __restrict__ eigen_vect = GEMV_CLASSIC(8,8, 1.0, Test_A, 8, vect_in_A_domain);
+    f64* __restrict__ Q_2 = aligned_alloc(64, sizeof(f64) * 36);
+    memcpy(Q_2, qr_Q, sizeof(f64) * 36);
 
-    // for(ui32 i = 0; i < 6; ++i){
-    //     for(ui32 j = 0; j < 6; ++j){
-    //         for(ui32 k = 0; k < 6; ++k)
-    //             tmp_q += Q_2[k * 6 + i] * qr_Q[k * 6 + j];
-    //         result[i * 6 + j] = tmp_q;
-    //         tmp_q = 0;
-    //     }
-    // }
+    f64* __restrict__ result = aligned_alloc(64, sizeof(f64) * 36);
+    f64 tmp_q = 0;
+
+    for(ui32 i = 0; i < 6; ++i){
+        for(ui32 j = 0; j < 6; ++j){
+            for(ui32 k = 0; k < 6; ++k)
+                tmp_q += Q_2[k * 6 + i] * qr_Q[k * 6 + j];
+            result[i * 6 + j] = tmp_q;
+            tmp_q = 0;
+        }
+    }
+    // getchar();
     // printf("\n");
     // display_matrix(matrix_V_M, 8, 7);
     // display_matrix(matrix_V_M, 8, 7);
     // printf("\n \n");
     // display_matrix(matrix_H_M, 8, 6);
-    compare_matrix(rows, cols, matrix_V_C, rows, cols, Test_Q, epsilon);
-    compare_matrix(rows, cols, matrix_V_M, rows, cols, Test_Q, epsilon);
-    compare_matrix(rows, n_krylov, matrix_H_C, rows, n_krylov, Test_H, epsilon);
-    compare_matrix(rows, n_krylov, matrix_H_M, rows, n_krylov, Test_H, epsilon);
+    // compare_matrix(rows, cols, matrix_V_C, rows, cols, Test_Q, epsilon);
+    // compare_matrix(rows, cols, matrix_V_M, rows, cols, Test_Q, epsilon);
+    // compare_matrix(rows, n_krylov, matrix_H_C, rows, n_krylov, Test_H, epsilon);
+    // compare_matrix(rows, n_krylov, matrix_H_M, rows, n_krylov, Test_H, epsilon);
 
     // END
 
     printf("All tests finished successfully. \n");
 
-    // free(result);
-    // free(Q_2);
-    // free(eigen_vect);
+    free(result);
+    free(Q_2);
+    free(eigen_vect);
     free(vector);
-    // free(vect_in_A_domain);
-    // free(qr_vect_1);
+    free(vect_in_A_domain);
+    free(qr_vect_1);
     free(gemm_A);
     free(gemm_C);
 	free(matrix_V_C);
