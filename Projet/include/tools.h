@@ -38,4 +38,8 @@ f64 verify_matrix(const ui32 rows,
 					const ui32 cols,
 					const f64* __restrict__ matrix);
 
+f64* matrix_col_modification(const ui32 rows,
+							 const ui32 cols,
+						 	 const f64* __restrict__ matrix,
+						 	 const ui32 line);
 #endif
