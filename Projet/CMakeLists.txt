@@ -3,6 +3,7 @@ project("Projet MPNA" C)
 
 find_package(OpenMP REQUIRED)
 find_package(BLAS REQUIRED)
+set(CMAKE_BUILD_TYPE Debug)
 
 add_library(custom_lib STATIC src/io.c src/miram.c src/blas_custom.c src/tools.c)
 

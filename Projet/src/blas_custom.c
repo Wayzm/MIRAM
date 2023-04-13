@@ -113,41 +113,34 @@ void GEMM_CLASSIC_NO_C(const ui32 rows_A,
                        const f64* __restrict__ matrix_B,
                        const ui32 version){
     f64 tmp = 0;
-    f64* __restrict__ matrix_C = aligned_alloc(64, sizeof(f64) * rows_B * cols_A);
+    f64* __restrict__ matrix_C = malloc(sizeof(f64) * rows_A * cols_A);
     // The modified matrix is on the right side
     if(version == 0){
         assert(cols_B == rows_A && cols_B == cols_A);
-        #pragma omp parallel
-        {
-            #pragma omp for schedule(dynamic, 1) private(tmp)
-            for(ui32 i = 0; i < rows_B; ++i){
-                for(ui32 j = 0; j < cols_A; ++j){
-                    for(ui32 k = 0; k < cols_B; ++k){
-                        tmp += matrix_B[i * cols_B + k] * matrix_A[j + cols_A * k];
-                    }
-                    matrix_C[i * cols_A + j] = factor * tmp;
-                    tmp = 0;
+        for(ui32 i = 0; i < rows_B; ++i){
+            for(ui32 j = 0; j < cols_A; ++j){
+                for(ui32 k = 0; k < cols_B; ++k){
+                    tmp += matrix_B[i * cols_B + k] * matrix_A[j + cols_A * k];
                 }
+                matrix_C[i * cols_A + j] = factor * tmp;
+                tmp = 0;
             }
         }
     }
     else{
         assert(cols_A == rows_B && cols_A == cols_B);
-        #pragma omp parallel
-        {
-            #pragma omp for schedule(dynamic, 1) private(tmp)
-            for(ui32 i = 0; i < rows_A; ++i){
-                for(ui32 j = 0; j < cols_B; ++j){
-                    for(ui32 k = 0; k < cols_A; ++k){
-                        tmp += matrix_A[i * cols_A + k] * matrix_B[j + cols_B * k];
-                    }
-                    matrix_C[i * cols_B + j] = factor * tmp;
-                    tmp = 0;
+        for(ui32 i = 0; i < rows_A; ++i){
+            for(ui32 j = 0; j < cols_B; ++j){
+                for(ui32 k = 0; k < cols_A; ++k){
+                    tmp += matrix_A[i * cols_A + k] * matrix_B[j + cols_B * k];
                 }
+                matrix_C[i * cols_B + j] = factor * tmp;
+                tmp = 0;
             }
         }
     }
     memcpy(matrix_A, matrix_C, rows_A * cols_A * sizeof(f64));
+    free(matrix_C);
 }
 
 f64* TRANSPOSE_MAT(const ui32 rows,
