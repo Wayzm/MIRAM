@@ -9,20 +9,66 @@
 
 int main(int argc, char** argv){
 
-	// char* matrix_path[64], number_of_eigenvalues[32];
-	// printf("Input path to the file with the matrix : \n");
-	// scanf("%63s", *matrix_path);
-	// if(matrix_path[0] == NULL)
-	// 	matrix_path[0] = "../bigA_test.txt";
-	// printf("Input the number of eigen values/eigen vectors needed : \n");
-	// scanf("%31s", number_of_eigenvalues);
-	// if(number_of_eigenvalues == NULL)
-	// 	number_of_eigenvalues[0] = "3";
-	// const ui32 nbr_of_eigenvalues = atoi(number_of_eigenvalues[0]);
-	// const ui32 n_krylov = 2 * nbr_of_eigenvalues;
+	/*** VARIABLES ***/
+	char matrix_path[256];
+	ui32 number_of_eigenvalues = 0;
+	ui32 cols = 0;
+	ui32 rows = 0;
+	ui32 n_krylov;
 
+	/*** SET UP ***/
+	printf("Input path to the file with the matrix : \n");
+	scanf("%s", matrix_path);
+	if(access(matrix_path, R_OK ) != 0 || access(matrix_path,F_OK) != 0)
+    {
+      // file doesn't exist or can't be read
+      perror("File was not found or does not have read permission!\nPlease, try again.\n");
+      exit(0);
+    }
 
-	// free(matrix_path);
-	// free(number_of_eigenvalues);
+	printf("Input the number of rows and cols as such: <unsigned int> <unsigned int> \n");
+	scanf("%d %d", &rows, &cols);
+	if(rows == 0 || cols == 0){
+		perror("Rows and Cols cannot be null. \n");
+		exit(0);
+	}
+	printf("Input the number of eigen values/eigen vectors needed : \n");
+	scanf("%d", &number_of_eigenvalues);
+	if(number_of_eigenvalues == 0){
+		perror("The number of eigenvalues cannot be null.\n");
+		exit(0);
+	}
+	n_krylov = 2 * number_of_eigenvalues; // KRYLOV SUBDOMAIN RANK
+	const ui32 shift = n_krylov - number_of_eigenvalues; // Number of shift in QR decomposition
+	printf("Shift : %d \n", shift);
+	/*** MATRIXES ***/
+	f64* __restrict__ matrix_A = read_matrix(matrix_path, rows, cols);
+	f64* __restrict__ matrix_V = aligned_alloc(64, sizeof(f64) * rows * (n_krylov + 1));
+	f64* __restrict__ matrix_H = aligned_alloc(64, sizeof(f64) * rows * n_krylov);
+	f64* __restrict__ init_vector = aligned_alloc(64, sizeof(f64) * rows);
+
+	// /*** IRAM ***/
+	for(ui32 i = 0; i < rows; ++i)
+		init_vector[i] = (double)i;
+
+	ArnoldiProjection_Modified(rows, cols, n_krylov, init_vector, matrix_A,
+								matrix_V, matrix_H);
+
+	// Remove the last column of V
+	f64* __restrict__ V_krylov = matrix_col_modification(rows, n_krylov + 1, matrix_V, n_krylov);
+
+	const f64 norm_H = norm_frobenius(rows, n_krylov, matrix_H);
+	getchar();
+	f64* __restrict__ matrix_Q = QR_Decomposition(n_krylov, shift, matrix_H);
+	// GEMM_CLASSIC_NO_C(rows, n_krylov, 1.0, V_krylov, n_krylov, n_krylov, matrix_Q, 1);
+	free(matrix_Q);
+
+	/*** FREE STRUCTURES ***/
+	free(matrix_A);
+	free(matrix_V);
+	free(matrix_H);
+	free(init_vector);
+	free(V_krylov);
+	/*** FREE STRUCTURES ***/
 	return 0;
 }

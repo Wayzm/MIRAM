@@ -53,9 +53,10 @@ void GEMM_CLASSIC_NO_C(const ui32 rows_A,
                        f64* __restrict__ matrix_A,
                        const ui32 rows_B,
                        const ui32 cols_B,
-                       const f64* __restrict__ matrix_B);
+                       const f64* __restrict__ matrix_B,
+                       const ui32 version);
 
 f64* TRANSPOSE_MAT(const ui32 rows,
                    const ui32 cols,
-                   f64* __restrict__ Matrix);
+                   const f64* __restrict__ Matrix);
 #endif
