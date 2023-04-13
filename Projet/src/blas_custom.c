@@ -129,3 +129,17 @@ void GEMM_CLASSIC_NO_C(const ui32 rows_A,
     }
     memcpy(matrix_A, matrix_C, rows_A * cols_A * sizeof(f64));
 }
+
+f64* TRANSPOSE_MAT(const ui32 rows,
+                   const ui32 cols,
+                   f64* __restrict__ Matrix){
+    f64* __restrict__ tmp = aligned_alloc(64, sizeof(f64) * cols * rows);
+
+    #pragma omp parallel for schedule(static)
+    for(ui32 i = 0; i < rows; ++i){
+        for(ui32 j = 0; j < cols; ++j)
+            tmp[j * cols + i] = Matrix[i * cols + j];
+    }
+
+    return tmp;
+}
